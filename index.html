@@ -1007,6 +1007,33 @@ document.querySelectorAll('.dock-btn, .nav-item').forEach(btn=>{
   btn.addEventListener('click',()=> switchPage(btn.dataset.page));
 });
 
+/* ── 左右滑動切換分頁（基板 ⇄ 6012） ── */
+const PAGE_ORDER = ['blanks','6012'];
+let _swX=0,_swY=0,_swOnCarousel=false,_swTracking=false;
+document.addEventListener('touchstart',e=>{
+  if(e.touches.length!==1){ _swTracking=false; return; }
+  const t=e.touches[0];
+  _swX=t.clientX; _swY=t.clientY;
+  // 起點若在批號輪播內 → 交給輪播處理，不切頁
+  _swOnCarousel = !!(e.target.closest && e.target.closest('.carousel'));
+  _swTracking=true;
+},{passive:true});
+document.addEventListener('touchend',e=>{
+  if(!_swTracking) return; _swTracking=false;
+  if(_swOnCarousel) return;
+  if(document.body.classList.contains('locked')) return;   // 密碼鎖顯示時不切頁
+  const t=e.changedTouches[0];
+  const dx=t.clientX-_swX, dy=t.clientY-_swY;
+  if(Math.abs(dx)<60) return;                 // 位移太小
+  if(Math.abs(dx)<Math.abs(dy)*1.4) return;   // 不夠水平（避免與上下捲動衝突）
+  const curEl=document.querySelector('.page.active');
+  if(!curEl) return;
+  let idx=PAGE_ORDER.indexOf(curEl.id.replace('page-',''));
+  idx += (dx<0) ? 1 : -1;                      // 左滑→下一頁；右滑→上一頁
+  if(idx<0 || idx>=PAGE_ORDER.length) return;
+  switchPage(PAGE_ORDER[idx]);
+},{passive:true});
+
 /* ── 即時抓取（初次載入 & 重新整理鈕共用） ── */
 function loadLive(){
   document.querySelectorAll('.refresh-btn').forEach(b=>b.classList.add('spinning'));
