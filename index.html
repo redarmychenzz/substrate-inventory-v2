@@ -823,9 +823,18 @@ function recItem(r){
 function toggleRec(row){
   const item = row.closest('.rec-item');
   const det  = item.querySelector('.rec-detail');
-  const pad  = det.querySelector('.rec-detail-pad');
-  const open = item.classList.toggle('open');
-  det.style.height = open ? pad.offsetHeight + 'px' : '0px';
+  const willOpen = !item.classList.contains('open');
+  // 手風琴：先收合其他已展開的紀錄（含近 7 天與更早清單）
+  document.querySelectorAll('.rec-item.open').forEach(o=>{
+    if(o!==item){ o.classList.remove('open'); o.querySelector('.rec-detail').style.height='0px'; }
+  });
+  if(willOpen){
+    item.classList.add('open');
+    det.style.height = det.querySelector('.rec-detail-pad').offsetHeight + 'px';
+  } else {
+    item.classList.remove('open');
+    det.style.height = '0px';
+  }
 }
 
 /* ── 建立 6012 頁（可重複呼叫：靜態→即時） ── */
