@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1a6b4e"/>
+      <stop offset="1" stop-color="#08301f"/>
+    </linearGradient>
+    <radialGradient id="sheen" cx="0.32" cy="0.14" r="0.9">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.22"/>
+      <stop offset="0.55" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="sh" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="2.4" stdDeviation="2" flood-color="#000" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+
+  <!-- 底：墨綠圓角漸層 + 頂部反光 -->
+  <rect width="100" height="100" rx="23" fill="url(#bg)"/>
+  <rect width="100" height="100" rx="23" fill="url(#sheen)"/>
+
+  <!-- 地面投影 -->
+  <ellipse cx="50" cy="84" rx="30" ry="6" fill="#000" opacity="0.22"/>
+
+  <!-- 立體堆疊箱（庫存） -->
+  <g filter="url(#sh)">
+    <!-- 底箱 -->
+    <polygon points="27,50 61,50 72,41 38,41" fill="#f6d38c"/>            <!-- 頂面 -->
+    <polygon points="61,50 72,41 72,71 61,80" fill="#d59f4f"/>            <!-- 右側面 -->
+    <polygon points="27,50 61,50 61,80 27,80" fill="#eebf6f"/>            <!-- 前面 -->
+    <line x1="44" y1="50" x2="44" y2="80" stroke="#d9a856" stroke-width="1.6"/> <!-- 封箱膠帶 -->
+
+    <!-- 上箱 -->
+    <polygon points="33,30 59,30 68,23 42,23" fill="#f9dc9a"/>            <!-- 頂面 -->
+    <polygon points="59,30 68,23 68,43 59,50" fill="#dca954"/>            <!-- 右側面 -->
+    <polygon points="33,30 59,30 59,50 33,50" fill="#f2c877"/>            <!-- 前面 -->
+    <line x1="46" y1="30" x2="46" y2="50" stroke="#dbaa5a" stroke-width="1.4"/>
+  </g>
+
+  <!-- 勾選徽章（庫存已盤點） -->
+  <circle cx="76" cy="74" r="13" fill="#2fbf6e" stroke="#ffffff" stroke-width="2.6"/>
+  <path d="M70 74 l4 4 8 -9" fill="none" stroke="#ffffff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

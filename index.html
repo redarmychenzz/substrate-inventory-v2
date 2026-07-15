@@ -4,6 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
 <title>Team1 基板 list</title>
+<!-- 圖示 / 桌面 icon -->
+<link rel="icon" type="image/svg+xml" href="assets/icon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/icon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="assets/icon-16.png">
+<link rel="apple-touch-icon" href="assets/icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<!-- iOS 全螢幕 / 狀態列（消除加入主畫面後的上下白邊） -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="基板庫存">
+<meta name="theme-color" content="#0a0e18" id="themeColorMeta">
 <script>
   // 主題初始化（避免閃爍）
   (function(){
@@ -35,6 +47,7 @@
     --shadow-sm:0 4px 14px -6px rgba(31,58,95,.22);
     --total-grad:linear-gradient(160deg,#20303f,#41576d);
     --glass-hi:rgba(255,255,255,.75);
+    --bg-solid:#e7edf6;
     --body-bg:
       radial-gradient(125% 90% at 10% -8%, #bcd7fb 0%, rgba(188,215,251,0) 50%),
       radial-gradient(120% 85% at 108% 0%, #bdeecd 0%, rgba(189,238,205,0) 46%),
@@ -56,6 +69,7 @@
     --shadow-sm:0 6px 18px -8px rgba(0,0,0,.55);
     --total-grad:linear-gradient(160deg,#eaf1f9,#a9bccf);
     --glass-hi:rgba(255,255,255,.18);
+    --bg-solid:#0a0e18;
     --carrier-bg:rgba(150,140,235,.16); --carrier-tx:#b7abf2; --carrier-line:rgba(150,140,235,.34);
     --body-bg:
       radial-gradient(120% 80% at 15% -5%, #1b3554 0%, rgba(27,53,84,0) 55%),
@@ -65,8 +79,9 @@
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
   html,body{min-height:100%;}
-  /* 背景放在根元素 → 覆蓋 iOS 安全區/overscroll，消除上下白邊 */
-  html{background:var(--body-bg);}
+  /* 背景放在根元素 → 覆蓋 iOS 安全區/overscroll，消除上下白邊。
+     關鍵：iOS overscroll 只吃 background-color（不吃漸層 image），故補一層純色 */
+  html{background:var(--body-bg);background-color:var(--bg-solid);}
   body{
     font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI","PingFang TC","Noto Sans TC",system-ui,sans-serif;
     color:var(--ink);
@@ -297,18 +312,26 @@
   html[data-theme="dark"] .tag.mth-scrap{color:#ff726a;}
 
   .older-wrap{display:none;}
-  .older-wrap.show{display:block;animation:fade .3s ease;}
-  .older-list{padding-top:12px;display:flex;flex-direction:column;gap:10px;}
+  .older-wrap.show{display:block;animation:olderReveal .42s var(--ease);}
+  @keyframes olderReveal{from{opacity:0;transform:translateY(-12px);}to{opacity:1;transform:none;}}
+  .older-list{padding-top:14px;display:flex;flex-direction:column;gap:10px;}
 
   .more-btn{
-    width:100%;margin-top:14px;display:flex;align-items:center;justify-content:center;gap:8px;
+    width:100%;max-width:600px;margin:14px auto 0;display:flex;align-items:center;justify-content:center;gap:8px;
     padding:14px;border-radius:16px;border:1px solid var(--hair);background:var(--card);
     -webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
     color:var(--ink-2);font-weight:700;font-size:13px;font-family:inherit;cursor:pointer;
-    box-shadow:var(--shadow-sm);transition:color .2s,border-color .2s;
+    box-shadow:var(--shadow-sm);
+    transition:max-width .42s var(--ease), padding .3s var(--ease), background .3s, color .25s, border-color .25s, box-shadow .3s;
   }
-  .more-btn:active{border-color:var(--blue-line);color:var(--blue);}
+  .more-btn:active{transform:scale(.99);}
   .more-btn .chev2{width:18px;height:18px;transition:transform .34s var(--ease);}
+  /* 展開後：縮窄 + 實心藍，明顯區別於半透明的資料欄塊 */
+  .more-btn.open{
+    max-width:210px;padding:11px 18px;color:#fff;border-color:transparent;
+    background:linear-gradient(140deg,var(--blue),#4aa3ff);
+    box-shadow:0 12px 26px -8px rgba(10,132,255,.55), inset 0 1px 0 var(--glass-hi);
+  }
   .more-btn.open .chev2{transform:rotate(180deg);}
 
   /* ── BOTTOM DOCK ── */
@@ -564,6 +587,8 @@ function parseSize(spec){const m=(spec||'').match(/(\d+[Xx]\d+[Xx]\d+)/);return 
 function applyThemeIcon(){
   const t = document.documentElement.getAttribute('data-theme');
   document.querySelectorAll('.theme-btn').forEach(b=>b.innerHTML = (t==='dark') ? SUN : MOON);
+  const meta = document.getElementById('themeColorMeta');
+  if(meta) meta.setAttribute('content', t==='dark' ? '#0a0e18' : '#e7edf6');
 }
 document.querySelectorAll('.theme-btn').forEach(btn=>btn.addEventListener('click',()=>{
   const cur = document.documentElement.getAttribute('data-theme');
