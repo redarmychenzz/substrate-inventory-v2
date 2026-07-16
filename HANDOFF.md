@@ -39,13 +39,15 @@
 - 純靜態、無 build、vanilla JS
 - 主題：淺/深色手動切換（localStorage `inv_theme`），CSS 變數
 - 版面：手機優先；≥900px 為電腦版（左側欄取代底部 dock）
-- 核心函式：`build(D)=buildBlanks(D)+build6012(D)`、`mapBlanks/map6012`、`loadLive()`（重新整理鈕共用）、`switchPage(p)`、`collapseAll()`、`toggleSize/toggleRec`
+- 核心函式：`build(D)=buildBlanks(D)+build6012(D)`、`mapBlanks/map6012`、`loadLive()`（重新整理鈕共用）、`switchPage(p)`、`collapseAll()`、`toggleSize/toggleRec`、`deskList/deskRow`（電腦版條列式）、`useTag`（用途徽章）
 
 ## 已完成功能
 ### 分頁1「Team1 基板 list」
 - Hero：icon+標題+最後更新時間+重新整理鈕+主題鈕；「基板數量」大數字(pcs) + A倉(藍)/B倉(綠) 藥丸
 - 尺寸清單：手風琴（一次只展開一個），左側 icon + 尺寸(數字不重疊) + A/B/共 徽章
-- 展開內容：批號可左右滑卡片（電腦版有左右箭頭+圓點）；費用化只有 ✘ 顯示紅「未費用」
+- 展開內容（手機 <900px）：批號左右滑卡片＋圓點；費用化只有 ✘ 顯示紅「未費用」
+- 展開內容（電腦 ≥900px）：條列式（帳冊表格＋分倉分組 `.desk-list`）——A倉/B倉 分組、左側色條生長動畫、列 stagger 浮現、hover 淡藍高亮；取代輪播（箭頭已移除）
+- 批號卡/條列皆有「用途」徽章（Sheet L 欄，載具旁）：工程藍 / 調查琥珀 / 校正青 / 回收綠 / 其他灰（`useTag`；`data.js` 快照含 `use` 欄位）
 ### 分頁2「6012 使用紀錄」
 - Hero：未使用庫存 / 可報廢（pcs）
 - 近 7 天展開、其餘收在「顯示更早的紀錄」（基準=最新一筆紀錄往回 7 天）

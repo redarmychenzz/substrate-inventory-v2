@@ -241,6 +241,15 @@
   .tag.green{background:var(--green);color:#fff;}
   .tag.carrier{background:var(--carrier-bg);color:var(--carrier-tx);border:1px solid var(--carrier-line);cursor:default;}
   .tag.exp-no{margin-left:auto;background:var(--red);color:#fff;box-shadow:0 4px 12px -4px rgba(255,59,48,.6);}
+  /* 用途徽章（Sheet「用途」欄：工程/調查/校正/回收/其他） */
+  .tag.use-eng{background:var(--blue-soft);color:var(--blue);border:1px solid var(--blue-line);}
+  .tag.use-inv{background:var(--amber-soft);color:#b9740a;border:1px solid var(--amber-line);}
+  .tag.use-cal{background:rgba(20,184,166,.14);color:#0d9488;border:1px solid rgba(20,184,166,.42);}
+  .tag.use-rec{background:var(--green-soft);color:#1f9c56;border:1px solid var(--green-line);}
+  .tag.use-oth{background:rgba(120,140,165,.14);color:var(--ink-2);border:1px solid rgba(120,140,165,.32);}
+  html[data-theme="dark"] .tag.use-inv{color:#f5b955;}
+  html[data-theme="dark"] .tag.use-cal{color:#2dd4bf;}
+  html[data-theme="dark"] .tag.use-rec{color:#4fd68c;}
 
   .fields{display:flex;flex-direction:column;}
   .field{display:flex;gap:12px;padding:9px 0;border-top:1px solid var(--hair);}
@@ -254,23 +263,37 @@
   .dots{display:flex;gap:5px;justify-content:center;}
   .dot{width:6px;height:6px;border-radius:999px;background:var(--ink-3);opacity:.3;transition:all .25s;}
   .dot.on{opacity:1;width:17px;background:var(--blue);}
-  /* 批號切換箭頭：手機隱藏（用滑動），電腦版顯示 */
-  .car-arrow{
-    display:none;width:30px;height:30px;flex:none;border-radius:50%;cursor:pointer;
-    align-items:center;justify-content:center;
-    border:1px solid var(--glass-border);background:var(--card-strong);
-    -webkit-backdrop-filter:saturate(180%) blur(12px);backdrop-filter:saturate(180%) blur(12px);
-    box-shadow:var(--shadow-sm);color:var(--ink-2);
-    transition:color .2s, border-color .2s, opacity .2s, transform .12s;
-  }
-  .car-arrow svg{width:16px;height:16px;}
-  .car-arrow:hover{color:var(--blue);border-color:var(--blue-line);}
-  .car-arrow:active{transform:scale(.9);}
-  .car-arrow.off{opacity:.3;pointer-events:none;}
+
+  /* ── 電腦版條列式（帳冊表格 ＋ 分倉分組）：≥900px 取代批號輪播 ── */
+  .desk-list{display:none;}
   @media (min-width:900px){
-    .car-arrow{display:inline-flex;}
-    .swipe-hint{display:none;}
+    .detail .carousel,.detail .car-ctrl,.detail .swipe-hint{display:none;}
+    .desk-list{display:block;padding:2px 2px 0;}
   }
+  .dl-grid{display:grid;grid-template-columns:minmax(148px,1.1fr) 56px 54px 1.5fr;gap:12px;align-items:start;}
+  .dl-header{margin-left:14px;padding:4px 8px 8px;border-bottom:1.5px solid var(--hair);}
+  .dl-header span{font-size:10px;font-weight:800;letter-spacing:1.3px;color:var(--ink-3);white-space:nowrap;}
+  .dl-group{position:relative;padding-left:14px;margin-top:12px;}
+  .dl-group::before{content:"";position:absolute;left:2px;top:4px;bottom:4px;width:3.5px;border-radius:99px;
+    transform:scaleY(0);transform-origin:top;transition:transform .65s var(--ease) .12s;}
+  .dl-group.gA::before{background:linear-gradient(180deg,var(--blue),rgba(10,132,255,.25));}
+  .dl-group.gB::before{background:linear-gradient(180deg,var(--green),rgba(47,191,110,.25));}
+  .size-item.open .dl-group::before{transform:scaleY(1);}
+  .dl-ghead{display:flex;align-items:baseline;gap:7px;padding:2px 8px 5px;}
+  .dl-ghead .wt{font-size:12.5px;font-weight:800;letter-spacing:.5px;}
+  .dl-group.gA .dl-ghead .wt{color:var(--blue);}
+  .dl-group.gB .dl-ghead .wt{color:#1f9c56;}
+  html[data-theme="dark"] .dl-group.gB .dl-ghead .wt{color:#4fd68c;}
+  .dl-ghead .ct{font-size:11px;color:var(--ink-3);font-weight:600;}
+  .dl-row{padding:10px 8px;border-top:1px solid var(--hair);border-radius:10px;transition:background .18s;}
+  .dl-row:hover{background:rgba(10,132,255,.055);}
+  .dl-row .lot{font-family:"SF Mono",ui-monospace,"Menlo",monospace;font-weight:700;font-size:12.5px;
+    letter-spacing:.2px;color:var(--ink);word-break:break-all;}
+  .dl-row .spec{font-size:10.5px;color:var(--ink-3);margin-top:2px;}
+  .dl-cell{font-size:12.5px;line-height:1.5;color:var(--ink);word-break:break-word;}
+  .dl-sub{font-size:11px;color:var(--ink-3);margin-top:3px;font-weight:400;}
+  .dl-sub.warn{color:var(--red);font-weight:700;}
+  .tag.sm{padding:4px 9px;font-size:10.5px;}
 
   /* ── 6012：hero（沿用基板 list 的 total + 藥丸樣式） ── */
   .total-wrap{display:flex;flex-direction:column;}
@@ -604,6 +627,15 @@ applyThemeIcon();
 
 /* ── 批號卡 ── */
 function thkText(t){t=(t||'').trim();return (t && t!=='-') ? esc(t)+' mm' : '—';}
+/* 用途徽章（依分類上色；extra 可加 sm 等尺寸 class） */
+function useTag(u, extra){
+  const t=(u||'').trim();
+  if(!t || t==='-') return '';
+  const cls = t==='工程'?'use-eng' : t==='調查'?'use-inv' : t==='校正'?'use-cal' : t==='回收'?'use-rec' : 'use-oth';
+  return `<span class="tag ${cls}${extra?' '+extra:''}">${esc(t)}</span>`;
+}
+/* 空值正規化（'' 或 '-' 視為無資料） */
+function val(s){ s=(s||'').trim(); return (s && s!=='-') ? s : ''; }
 function lotCard(b){
   const whCls = b.wh==='A倉'?'blue':'green';
   const car = (b.car||'').trim();
@@ -616,6 +648,7 @@ function lotCard(b){
     <div class="lot-top">
       <span class="tag ${whCls}">${esc(b.wh)}</span>
       ${car ? `<span class="tag carrier">${esc(car)}</span>` : ''}
+      ${useTag(b.use)}
       ${expNo ? `<span class="tag exp-no">未費用</span>` : ''}
     </div>
     <div class="fields">
@@ -625,6 +658,40 @@ function lotCard(b){
       <div class="field"><span class="k">用途</span><span class="v ${pur?'':'dim'}">${esc(pur||'—')}</span></div>
       <div class="field"><span class="k">備註</span><span class="v ${(note&&note!=='-')?'':'dim'}">${(note&&note!=='-')?esc(note):'—'}</span></div>
     </div>
+  </div>`;
+}
+
+/* ── 電腦版條列式：帳冊表格 ＋ 分倉分組（≥900px 顯示，取代輪播） ── */
+function deskRow(b){
+  const spec = val(b.spec).replace(/^\(|\)$/g,'');
+  const car  = val(b.car);
+  const pur  = val(b.pur);
+  const note = val(b.note);
+  const thk  = val(b.thk);
+  const expNo = (b.exp||'').trim()==='✘';
+  return `
+    <div class="dl-row dl-grid reveal">
+      <div><div class="lot">${esc(b.lot||'—')}</div>${spec?`<div class="spec">${esc(spec)}</div>`:''}</div>
+      <div class="dl-cell">${esc(car||'—')}</div>
+      <div class="dl-cell">${useTag(b.use,'sm')||'—'}</div>
+      <div class="dl-cell">${esc(pur||'—')}
+        ${thk?`<div class="dl-sub">板厚 ${esc(thk)} mm</div>`:''}
+        ${note?`<div class="dl-sub">備註：${esc(note)}</div>`:''}
+        ${expNo?`<div class="dl-sub warn">⚠ 未費用</div>`:''}
+      </div>
+    </div>`;
+}
+function deskList(items){
+  const grp = (arr, cls, name) => arr.length ? `
+    <div class="dl-group ${cls}">
+      <div class="dl-ghead reveal"><span class="wt">${name}</span><span class="ct">${arr.length} 片</span></div>
+      ${arr.map(deskRow).join('')}
+    </div>` : '';
+  return `
+  <div class="desk-list">
+    <div class="dl-header dl-grid reveal"><span>批號 / 規格</span><span>載具</span><span>用途</span><span>使用目的 / 備註</span></div>
+    ${grp(items.filter(x=>x.wh==='A倉'),'gA','A倉')}
+    ${grp(items.filter(x=>x.wh==='B倉'),'gB','B倉')}
   </div>`;
 }
 
@@ -656,9 +723,7 @@ function buildBlanks(D){
   const t = a+b;
   const multi = items.length>1;
   const dots = multi ? `<div class="car-ctrl reveal">
-        <button class="car-arrow prev" onclick="carNav(this,-1)" aria-label="上一片"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
         <div class="dots">${items.map((_,j)=>`<span class="dot ${j===0?'on':''}"></span>`).join('')}</div>
-        <button class="car-arrow next" onclick="carNav(this,1)" aria-label="下一片"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
       </div>` : '';
   const hint = multi ? `<div class="swipe-hint reveal"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5l-4 7 4 7M16 5l4 7-4 7"/></svg>左右滑動切換批號（共 ${items.length} 片）</div>` : '';
   html += `
@@ -679,6 +744,7 @@ function buildBlanks(D){
     </div>
     <div class="detail" data-idx="${i}">
       <div class="detail-pad">
+        ${deskList(items)}
         ${hint}
         <div class="carousel reveal" data-carousel="${i}">${items.map(lotCard).join('')}</div>
         ${dots}
@@ -721,26 +787,15 @@ function toggleSize(i){
   else { if(openIdx!==-1) closeSize(openIdx); openSize(i); }
 }
 
-/* ── 批號輪播：箭頭切換（電腦版） ── */
-function carNav(el, dir){
-  const pad = el.closest('.detail-pad');
-  const car = pad && pad.querySelector('.carousel');
-  if(car) car.scrollBy({left: dir*car.clientWidth, behavior:'smooth'});
-}
-
-/* ── carousel dots / 箭頭狀態同步 ── */
+/* ── carousel dots 狀態同步（手機） ── */
 function attachDots(){
   listEl.querySelectorAll('.carousel').forEach(car=>{
     const pad  = car.closest('.detail-pad');
     const dots = pad ? pad.querySelectorAll('.dot') : [];
-    const prev = pad ? pad.querySelector('.car-arrow.prev') : null;
-    const next = pad ? pad.querySelector('.car-arrow.next') : null;
-    if(!dots.length && !prev) return;
+    if(!dots.length) return;
     const update = ()=>{
       const idx = Math.round(car.scrollLeft / car.clientWidth);
       dots.forEach((d,j)=>d.classList.toggle('on', j===idx));
-      if(prev) prev.classList.toggle('off', car.scrollLeft <= 2);
-      if(next) next.classList.toggle('off', car.scrollLeft >= car.scrollWidth - car.clientWidth - 2);
     };
     let raf=null;
     car.addEventListener('scroll',()=>{
@@ -928,7 +983,8 @@ function mapBlanks(rows){
   const cL=findCol(H,['metal lot','批號','lot']);
   const cW=findCol(H,['庫別','倉庫','warehouse']);
   const cC=findCol(H,['載具','carrier']);
-  const cP=findCol(H,['使用目的','目的','purpose','用途']);
+  const cP=findCol(H,['使用目的','目的','purpose']);
+  const cU=findCol(H,['用途']);
   const cN=findCol(H,['備註','note']);
   const cT=findCol(H,['板厚','thickness','thk']);
   const cE=findCol(H,['費用化','exp']);
@@ -936,7 +992,7 @@ function mapBlanks(rows){
   for(const r of rows.slice(1)){
     const wh=cell(r,cW).trim();
     if(wh!=='A倉' && wh!=='B倉') continue;
-    out.push({ lot:cell(r,cL), spec:cell(r,cS), wh, car:cell(r,cC), thk:cell(r,cT), pur:cell(r,cP), note:cell(r,cN), exp:cell(r,cE) });
+    out.push({ lot:cell(r,cL), spec:cell(r,cS), wh, car:cell(r,cC), thk:cell(r,cT), use:cell(r,cU), pur:cell(r,cP), note:cell(r,cN), exp:cell(r,cE) });
   }
   return out;
 }
