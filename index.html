@@ -270,9 +270,11 @@
     .detail .carousel,.detail .car-ctrl,.detail .swipe-hint{display:none;}
     .desk-list{display:block;padding:2px 2px 0;}
   }
-  .dl-grid{display:grid;grid-template-columns:minmax(148px,1.1fr) 56px 54px 1.5fr;gap:12px;align-items:start;}
+  .dl-grid{display:grid;grid-template-columns:minmax(160px,1.05fr) 72px 68px 1.6fr;gap:12px;align-items:start;}
+  /* 載具、屬性欄置中（表頭與內容一致） */
+  .dl-grid > :nth-child(2),.dl-grid > :nth-child(3){text-align:center;}
   .dl-header{margin-left:14px;padding:4px 8px 8px;border-bottom:1.5px solid var(--hair);}
-  .dl-header span{font-size:10px;font-weight:800;letter-spacing:1.3px;color:var(--ink-3);white-space:nowrap;}
+  .dl-header span{font-size:11px;font-weight:800;letter-spacing:1.3px;color:var(--ink-3);white-space:nowrap;}
   .dl-group{position:relative;padding-left:14px;margin-top:12px;}
   .dl-group::before{content:"";position:absolute;left:2px;top:4px;bottom:4px;width:3.5px;border-radius:99px;
     transform:scaleY(0);transform-origin:top;transition:transform .65s var(--ease) .12s;}
@@ -280,20 +282,20 @@
   .dl-group.gB::before{background:linear-gradient(180deg,var(--green),rgba(47,191,110,.25));}
   .size-item.open .dl-group::before{transform:scaleY(1);}
   .dl-ghead{display:flex;align-items:baseline;gap:7px;padding:2px 8px 5px;}
-  .dl-ghead .wt{font-size:12.5px;font-weight:800;letter-spacing:.5px;}
+  .dl-ghead .wt{font-size:14px;font-weight:800;letter-spacing:.5px;}
   .dl-group.gA .dl-ghead .wt{color:var(--blue);}
   .dl-group.gB .dl-ghead .wt{color:#1f9c56;}
   html[data-theme="dark"] .dl-group.gB .dl-ghead .wt{color:#4fd68c;}
-  .dl-ghead .ct{font-size:11px;color:var(--ink-3);font-weight:600;}
-  .dl-row{padding:10px 8px;border-top:1px solid var(--hair);border-radius:10px;transition:background .18s;}
+  .dl-ghead .ct{font-size:12px;color:var(--ink-3);font-weight:600;}
+  .dl-row{padding:12px 10px;border-top:1px solid var(--hair);border-radius:10px;transition:background .18s;}
   .dl-row:hover{background:rgba(10,132,255,.055);}
-  .dl-row .lot{font-family:"SF Mono",ui-monospace,"Menlo",monospace;font-weight:700;font-size:12.5px;
+  .dl-row .lot{font-family:"SF Mono",ui-monospace,"Menlo",monospace;font-weight:700;font-size:14px;
     letter-spacing:.2px;color:var(--ink);word-break:break-all;}
-  .dl-row .spec{font-size:10.5px;color:var(--ink-3);margin-top:2px;}
-  .dl-cell{font-size:12.5px;line-height:1.5;color:var(--ink);word-break:break-word;}
-  .dl-sub{font-size:11px;color:var(--ink-3);margin-top:3px;font-weight:400;}
+  .dl-row .spec{font-size:11.5px;color:var(--ink-3);margin-top:3px;}
+  .dl-cell{font-size:14px;line-height:1.5;color:var(--ink);word-break:break-word;}
+  .dl-sub{font-size:12px;color:var(--ink-3);margin-top:3px;font-weight:400;}
   .dl-sub.warn{color:var(--red);font-weight:700;}
-  .tag.sm{padding:4px 9px;font-size:10.5px;}
+  .tag.sm{padding:5px 10px;font-size:11.5px;}
 
   /* ── 6012：hero（沿用基板 list 的 total + 藥丸樣式） ── */
   .total-wrap{display:flex;flex-direction:column;}
@@ -447,7 +449,23 @@
       margin-left:220px;max-width:none;
       padding:calc(env(safe-area-inset-top) + 32px) 32px 56px;
     }
-    .page{max-width:600px;margin:0 auto;}
+    .page{max-width:800px;margin:0 auto;}
+    /* 桌面字級放大（閱讀距離較遠） */
+    .hero-title{font-size:21px;}
+    .hero-title small{font-size:12px;}
+    .size-name{font-size:18px;}
+    .mini{font-size:12px;padding:5px 9px;}
+    .mini .lab{font-size:10.5px;}
+    .list-head .t,.sec-label .t{font-size:13px;}
+    .sec-label .c{font-size:12px;}
+    .rec-title{font-size:16px;}
+    .tag{font-size:12.5px;}
+    .field .k{font-size:12.5px;width:56px;}
+    .field .v{font-size:14.5px;}
+    .field .v.mono{font-size:14px;}
+    .rec-detail .field .k{width:94px;}
+    .more-btn{max-width:800px;font-size:14px;}
+    .more-btn.open{max-width:210px;}
   }
 </style>
 </head>
@@ -689,7 +707,7 @@ function deskList(items){
     </div>` : '';
   return `
   <div class="desk-list">
-    <div class="dl-header dl-grid reveal"><span>批號 / 規格</span><span>載具</span><span>用途</span><span>使用目的 / 備註</span></div>
+    <div class="dl-header dl-grid reveal"><span>批號 / 規格</span><span>載具</span><span>屬性</span><span>使用目的 / 備註</span></div>
     ${grp(items.filter(x=>x.wh==='A倉'),'gA','A倉')}
     ${grp(items.filter(x=>x.wh==='B倉'),'gB','B倉')}
   </div>`;
