@@ -57,6 +57,13 @@
 - 機台配色：TI藍/TC綠/TK琥珀/其他紫；方式：報廢紅/留存藍
 - 「收起更早的紀錄」按鈕展開後變縮窄實心藍，區別於半透明資料卡
 ### 共用
+- 動畫系統（全部只動 transform/opacity；`prefers-reduced-motion` 時全關）：
+  - 背景呼吸光暈 `.bg-fx`（3 顆色暈 16/20/24s 漂移，深色模式降透明度）
+  - 卡片 hover 懸浮＋光澤掃過＋icon 擺動（`@media (hover:hover)` 限滑鼠裝置）
+  - Hero 數字滾動 `setNum()`（setTimeout 驅動，勿改回 rAF）＋倉別藥丸彈入 `popPills()`
+  - 列按壓微縮（:active）、展開箭頭回彈（--spring）
+  - 分頁切換帶方向滑動（switchPage 設 `--pg-dx`）
+  - 重新整理鈕：轉圈→綠勾＋漣漪（成功）/紅驚嘆號（失敗）`refreshFeedback()`
 - 底部液態玻璃 dock（手機）/ 左側欄（電腦）切兩頁，狀態同步
 - 左右滑動切換分頁（基板左滑→6012、6012右滑→基板；避開輪播與垂直捲動、鎖定時不觸發）
 - 桌面/網頁 icon（墨綠底立體紙箱+勾選徽章）、PWA manifest、iOS 全螢幕 meta

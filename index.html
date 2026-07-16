@@ -27,6 +27,7 @@
   :root{
     --ease:cubic-bezier(0.22,1,0.36,1);
     --ease-close:cubic-bezier(0.4,0,0.25,1);
+    --spring:cubic-bezier(0.34,1.56,0.64,1);
     --blue:#0A84FF;   --blue-soft:rgba(10,132,255,.14);  --blue-line:rgba(10,132,255,.45);
     --green:#2FBF6E;  --green-soft:rgba(47,191,110,.16); --green-line:rgba(47,191,110,.5);
     --amber:#F59E0B;  --amber-soft:rgba(245,158,11,.16); --amber-line:rgba(245,158,11,.55);
@@ -95,9 +96,22 @@
     max-width:520px;margin:0 auto;
     padding:calc(env(safe-area-inset-top) + 14px) 16px calc(env(safe-area-inset-bottom) + 108px);
   }
-  .page{display:none;animation:fade .32s ease;}
-  .page.active{display:block;}
-  @keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  /* 分頁切換：帶方向的滑動過場（--pg-dx 由 switchPage 設定） */
+  .page{display:none;}
+  .page.active{display:block;animation:pageIn .45s var(--ease);}
+  @keyframes pageIn{from{opacity:0;transform:translateX(var(--pg-dx,0)) translateY(6px);}to{opacity:1;transform:none;}}
+
+  /* ── 背景呼吸光暈：三顆色暈緩慢漂移（fixed 墊在內容底下） ── */
+  .bg-fx{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;}
+  .bg-fx i{position:absolute;width:60vmin;height:60vmin;min-width:340px;min-height:340px;
+    border-radius:50%;filter:blur(70px);opacity:.3;transform:translateZ(0);}
+  .bg-fx .b1{background:#7fbfff;top:-18%;left:-10%;animation:drift1 16s ease-in-out infinite alternate;}
+  .bg-fx .b2{background:#8cecb4;top:-14%;right:-12%;animation:drift2 20s ease-in-out infinite alternate;}
+  .bg-fx .b3{background:#cdb9ff;bottom:-26%;left:30%;animation:drift3 24s ease-in-out infinite alternate;}
+  html[data-theme="dark"] .bg-fx i{opacity:.2;}
+  @keyframes drift1{from{transform:translate(0,0) scale(1);}to{transform:translate(9vmin,5vmin) scale(1.18);}}
+  @keyframes drift2{from{transform:translate(0,0) scale(1.1);}to{transform:translate(-7vmin,4vmin) scale(.95);}}
+  @keyframes drift3{from{transform:translate(0,0) scale(1);}to{transform:translate(-6vmin,-5vmin) scale(1.22);}}
 
   /* ── HERO ── */
   .hero{
@@ -135,8 +149,24 @@
   }
   .hero-btn:active{transform:scale(.9);}
   .hero-btn svg{width:19px;height:19px;}
+  /* 重新整理鈕：轉圈 → 綠勾＋漣漪（成功）/ 紅驚嘆號（失敗）→ 回復 */
+  .refresh-btn{position:relative;}
+  .refresh-btn .ic-refresh{transition:opacity .25s, transform .4s var(--spring);}
+  .refresh-btn .ic-check,.refresh-btn .ic-alert{position:absolute;inset:0;margin:auto;
+    opacity:0;transform:scale(.4);transition:opacity .25s, transform .4s var(--spring);}
+  .refresh-btn .ic-check{color:var(--green);}
+  .refresh-btn .ic-alert{color:var(--red);}
   .refresh-btn.spinning{pointer-events:none;color:var(--blue);}
-  .refresh-btn.spinning svg{animation:spin .8s linear infinite;}
+  .refresh-btn.spinning .ic-refresh{animation:spin .8s linear infinite;}
+  .refresh-btn.done,.refresh-btn.fail{pointer-events:none;}
+  .refresh-btn.done{border-color:var(--green-line);}
+  .refresh-btn.fail{border-color:rgba(255,59,48,.5);}
+  .refresh-btn.done .ic-refresh,.refresh-btn.fail .ic-refresh{opacity:0;transform:scale(.4);animation:none;}
+  .refresh-btn.done .ic-check{opacity:1;transform:scale(1);}
+  .refresh-btn.fail .ic-alert{opacity:1;transform:scale(1);}
+  .refresh-btn.done::after{content:"";position:absolute;inset:-1px;border-radius:12px;
+    border:2px solid var(--green);animation:ring .7s ease-out forwards;pointer-events:none;}
+  @keyframes ring{from{opacity:.8;transform:scale(1);}to{opacity:0;transform:scale(1.4);}}
   @keyframes spin{to{transform:rotate(360deg);}}
   .hero-body{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;position:relative;z-index:1;}
   .total{display:flex;align-items:baseline;gap:7px;}
@@ -153,6 +183,9 @@
   .wh-pill .u{font-size:11px;font-weight:600;opacity:.85;}
   .wh-pill.blue{background:linear-gradient(140deg,#0A84FF,#3aa0ff);}
   .wh-pill.green{background:linear-gradient(140deg,#25b466,#43cf82);}
+  /* 藥丸彈入（build 時觸發，delay 由 JS stagger） */
+  .wh-pill.pop{animation:pillPop .5s var(--spring) backwards;}
+  @keyframes pillPop{from{opacity:0;transform:scale(.7);}to{opacity:1;transform:none;}}
 
   /* ── SIZE LIST ── */
   .list-head{display:flex;align-items:center;gap:8px;padding:2px 6px 10px;}
@@ -165,12 +198,14 @@
     border:1px solid var(--hair);
     border-radius:20px;
     box-shadow:var(--shadow-sm);
-    overflow:hidden;
-    transition:border-color .3s var(--ease), box-shadow .3s var(--ease), background .3s;
+    overflow:hidden;position:relative;
+    transition:border-color .3s var(--ease), box-shadow .3s var(--ease), background .3s, transform .35s var(--ease);
   }
   .size-item.open{border-color:var(--blue-line);box-shadow:0 14px 34px -14px rgba(10,132,255,.42);}
 
-  .size-row{display:flex;align-items:center;gap:10px;padding:14px 14px;cursor:pointer;user-select:none;}
+  .size-row{display:flex;align-items:center;gap:10px;padding:14px 14px;cursor:pointer;user-select:none;
+    transition:transform .15s var(--ease);}
+  .size-row:active{transform:scale(.985);}
   .size-icon{
     width:32px;height:32px;border-radius:10px;flex:none;
     display:grid;place-items:center;
@@ -197,7 +232,7 @@
   html[data-theme="dark"] .mini.amber{color:#f5b955;}
   .mini.zero{opacity:.4;}
   .chev{width:20px;height:20px;flex:none;color:var(--ink-3);
-    transition:transform .34s var(--ease);margin-left:2px;}
+    transition:transform .5s var(--spring), color .25s;margin-left:2px;}
   .size-item.open .chev{transform:rotate(90deg);color:var(--blue);}
   /* 窄手機：進一步壓縮，確保尺寸數字完整不重疊 */
   @media (max-width:430px){
@@ -310,11 +345,13 @@
   .rec-item{
     background:var(--card);
     -webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
-    border:1px solid var(--hair);border-radius:20px;box-shadow:var(--shadow-sm);overflow:hidden;
-    transition:border-color .3s var(--ease), box-shadow .3s var(--ease);
+    border:1px solid var(--hair);border-radius:20px;box-shadow:var(--shadow-sm);overflow:hidden;position:relative;
+    transition:border-color .3s var(--ease), box-shadow .3s var(--ease), transform .35s var(--ease);
   }
   .rec-item.open{border-color:var(--blue-line);box-shadow:0 14px 34px -14px rgba(10,132,255,.42);}
-  .rec-row{display:flex;align-items:center;gap:12px;padding:14px 15px;cursor:pointer;user-select:none;}
+  .rec-row{display:flex;align-items:center;gap:12px;padding:14px 15px;cursor:pointer;user-select:none;
+    transition:transform .15s var(--ease);}
+  .rec-row:active{transform:scale(.985);}
   .rec-icon{
     width:38px;height:38px;border-radius:11px;flex:none;display:grid;place-items:center;
     background:linear-gradient(150deg,rgba(10,132,255,.14),rgba(47,191,110,.12));
@@ -324,7 +361,7 @@
   .rec-title{flex:1;min-width:0;font-size:15px;font-weight:700;color:var(--ink);letter-spacing:.2px;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .rec-title.dim{color:var(--ink-3);font-weight:600;}
-  .rec-chev{width:20px;height:20px;flex:none;color:var(--ink-3);transition:transform .34s var(--ease);margin-left:2px;}
+  .rec-chev{width:20px;height:20px;flex:none;color:var(--ink-3);transition:transform .5s var(--spring), color .25s;margin-left:2px;}
   .rec-item.open .rec-chev{transform:rotate(90deg);color:var(--blue);}
   .rec-detail{overflow:hidden;height:0;transition:height 340ms var(--ease);}
   .rec-detail-pad{padding:0 15px 14px;}
@@ -467,9 +504,32 @@
     .more-btn{max-width:800px;font-size:14px;}
     .more-btn.open{max-width:210px;}
   }
+
+  /* ── 滑鼠裝置：卡片懸浮＋光澤掃過、icon 擺動 ── */
+  @media (hover:hover){
+    .size-item:hover,.rec-item:hover{
+      transform:translateY(-3px);border-color:var(--blue-line);
+      box-shadow:0 18px 42px -16px rgba(10,132,255,.5);
+    }
+    .size-item::after,.rec-item::after{content:"";position:absolute;top:-20%;bottom:-20%;left:-45%;width:36%;
+      background:linear-gradient(105deg,transparent,var(--glass-hi),transparent);
+      transform:skewX(-16deg);opacity:0;pointer-events:none;}
+    .size-item:hover::after,.rec-item:hover::after{animation:sheen .85s ease .04s;}
+    .size-row:hover .size-icon,.rec-row:hover .rec-icon{animation:wiggle .55s var(--ease);}
+  }
+  @keyframes sheen{0%{left:-45%;opacity:0;}18%{opacity:.9;}100%{left:115%;opacity:0;}}
+  @keyframes wiggle{0%{transform:rotate(0);}30%{transform:rotate(-10deg) scale(1.08);}65%{transform:rotate(6deg) scale(1.05);}100%{transform:rotate(0);}}
+
+  /* 系統設定「減少動態效果」時全部關閉 */
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation:none!important;transition:none!important;}
+  }
 </style>
 </head>
 <body>
+
+<!-- ══ 背景呼吸光暈 ══ -->
+<div class="bg-fx" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i></div>
 
 <!-- ══ 密碼鎖 ══ -->
 <div class="lock" id="lock">
@@ -516,7 +576,7 @@
         </div>
         <div class="hero-title">Team1 基板 list<small id="updated">最後更新 —</small></div>
         <div class="hero-actions">
-          <button class="hero-btn refresh-btn" aria-label="重新整理"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36M21 3v6h-6"/></svg></button>
+          <button class="hero-btn refresh-btn" aria-label="重新整理"><svg class="ic-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36M21 3v6h-6"/></svg><svg class="ic-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg><svg class="ic-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v9"/><circle cx="12" cy="18.4" r="0.6" fill="currentColor"/></svg></button>
           <button class="hero-btn theme-btn" aria-label="切換深淺色"></button>
         </div>
       </div>
@@ -545,7 +605,7 @@
         </div>
         <div class="hero-title">6012 使用紀錄<small id="updated6012">最後更新 —</small></div>
         <div class="hero-actions">
-          <button class="hero-btn refresh-btn" aria-label="重新整理"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36M21 3v6h-6"/></svg></button>
+          <button class="hero-btn refresh-btn" aria-label="重新整理"><svg class="ic-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36M21 3v6h-6"/></svg><svg class="ic-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg><svg class="ic-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v9"/><circle cx="12" cy="18.4" r="0.6" fill="currentColor"/></svg></button>
           <button class="hero-btn theme-btn" aria-label="切換深淺色"></button>
         </div>
       </div>
@@ -626,6 +686,29 @@ const MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-
 
 function esc(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function parseSize(spec){const m=(spec||'').match(/(\d+[Xx]\d+[Xx]\d+)/);return m?m[1].toUpperCase():null;}
+
+/* ── Hero 數字滾動（由目前顯示值滾至新值） ── */
+function setNum(id, v){
+  const el = document.getElementById(id); if(!el) return;
+  if(v==null){ el.textContent='—'; return; }
+  const to = +v, from = parseInt(el.textContent,10) || 0;
+  if(isNaN(to) || from===to){ el.textContent=v; return; }
+  // 用 setTimeout 驅動（背景分頁 rAF 會被凍結，見 HANDOFF 測試提醒）
+  const t0 = performance.now(), dur = 800;
+  (function step(){
+    const p=Math.min(1,(performance.now()-t0)/dur), e=1-Math.pow(1-p,3);
+    el.textContent=Math.round(from+(to-from)*e);
+    if(p<1) setTimeout(step,16);
+  })();
+}
+/* ── 倉別藥丸彈入（重建時 stagger 觸發） ── */
+function popPills(pageId){
+  document.querySelectorAll('#'+pageId+' .wh-pill').forEach((p,i)=>{
+    p.classList.remove('pop'); void p.offsetWidth;
+    p.style.animationDelay=(0.4+i*0.12)+'s';
+    p.classList.add('pop');
+  });
+}
 
 /* ── 主題（兩頁共用切換鈕） ── */
 function applyThemeIcon(){
@@ -724,9 +807,10 @@ function buildBlanks(D){
     if(!groups.has(k)) groups.set(k,[]);
     groups.get(k).push(b);
   }
-  document.getElementById('totalNum').textContent = valid.length;
-  document.getElementById('whA').textContent = valid.filter(b=>b.wh==='A倉').length;
-  document.getElementById('whB').textContent = valid.filter(b=>b.wh==='B倉').length;
+  setNum('totalNum', valid.length);
+  setNum('whA', valid.filter(b=>b.wh==='A倉').length);
+  setNum('whB', valid.filter(b=>b.wh==='B倉').length);
+  popPills('page-blanks');
 
   const sortedKeys = [...groups.keys()].sort((a,b)=>{
     const [a1,a2,a3]=a.split('X').map(Number), [b1,b2,b3]=b.split('X').map(Number);
@@ -917,8 +1001,9 @@ function toggleRec(row){
 /* ── 建立 6012 頁（可重複呼叫：靜態→即時） ── */
 function build6012(D){
   const S6 = D.s6012 || {rows:[]};
-  document.getElementById('s6-unused').textContent = S6.unused!=null?S6.unused:'—';
-  document.getElementById('s6-scrap').textContent  = S6.scrap!=null?S6.scrap:'—';
+  setNum('s6-unused', S6.unused);
+  setNum('s6-scrap',  S6.scrap);
+  popPills('page-6012');
 
   // 排除「購入」，時間新→舊排序
   const recs = (S6.rows||[]).filter(r => (r.mth||'').trim() !== '購入');
@@ -1071,11 +1156,18 @@ function collapseAll(){
   const ml=document.getElementById('moreLabel'); if(ml) ml.textContent=`顯示更早的紀錄（${olderState.length} 筆）`;
 }
 
-/* ── 分頁切換（底部 dock 與左側邊欄同步，綁定一次） ── */
+/* ── 分頁切換（底部 dock 與左側邊欄同步，綁定一次；帶方向滑動過場） ── */
 function switchPage(p){
+  const cur = document.querySelector('.page.active');
+  const curIdx = cur ? PAGE_ORDER.indexOf(cur.id.replace('page-','')) : -1;
+  const newIdx = PAGE_ORDER.indexOf(p);
   collapseAll();
   document.querySelectorAll('.dock-btn, .nav-item').forEach(b=>b.classList.toggle('active', b.dataset.page===p));
-  document.querySelectorAll('.page').forEach(pg=>pg.classList.toggle('active', pg.id==='page-'+p));
+  document.querySelectorAll('.page').forEach(pg=>{
+    const on = pg.id==='page-'+p;
+    if(on && newIdx!==curIdx) pg.style.setProperty('--pg-dx', newIdx>curIdx ? '30px' : '-30px');
+    pg.classList.toggle('active', on);
+  });
   window.scrollTo({top:0,behavior:'smooth'});
 }
 document.querySelectorAll('.dock-btn, .nav-item').forEach(btn=>{
@@ -1110,6 +1202,14 @@ document.addEventListener('touchend',e=>{
 },{passive:true});
 
 /* ── 即時抓取（初次載入 & 重新整理鈕共用） ── */
+/* 重新整理鈕結果回饋：done=綠勾＋漣漪 / fail=紅驚嘆號，1.6 秒後回復 */
+function refreshFeedback(cls){
+  document.querySelectorAll('.refresh-btn').forEach(b=>{
+    b.classList.remove('spinning');
+    b.classList.add(cls);
+    setTimeout(()=>b.classList.remove(cls), 1600);
+  });
+}
 function loadLive(){
   document.querySelectorAll('.refresh-btn').forEach(b=>b.classList.add('spinning'));
   return Promise.all([ fetchGVizJSON(SHEET_ID, BLANKS_GID), fetchGVizJSON(SHEET_ID, G6012_GID) ])
@@ -1117,10 +1217,12 @@ function loadLive(){
       const live = { blanks: mapBlanks(bRows), s6012: map6012(sRows) };
       build(live);   // 重建 → 所有欄塊回到未展開
       setUpdated('即時更新 · ' + nowStr());
+      refreshFeedback('done');
     })
     .catch(err=>{
       setUpdated('靜態快照 · ' + (FALLBACK.generated || '—') + '（即時讀取失敗）');
       console.warn('[即時讀取失敗]', err && err.message);
+      refreshFeedback('fail');
     })
     .finally(()=>{
       document.querySelectorAll('.refresh-btn').forEach(b=>b.classList.remove('spinning'));
