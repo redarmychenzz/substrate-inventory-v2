@@ -1,0 +1,34 @@
+name: 自動更新 data.js 快照
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-data
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 抓取 Google Sheet 並重建 data.js
+        run: python3 scripts/update_data.py
+
+      - name: 有變更才 commit / push
+        run: |
+          if git diff --quiet data.js; then
+            echo "data.js 無變更，跳過 commit"
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data.js
+          git commit -m "自動更新 data.js 快照（GitHub Actions）"
+          git push
