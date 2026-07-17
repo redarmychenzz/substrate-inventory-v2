@@ -774,7 +774,7 @@ function deskRow(b){
   const expNo = (b.exp||'').trim()==='✘';
   return `
     <div class="dl-row dl-grid reveal">
-      <div><div class="lot">${esc(b.lot||'—')}</div>${spec?`<div class="spec">${esc(spec)}</div>`:''}${pn?`<div class="spec">品號 ${esc(pn)}</div>`:''}</div>
+      <div><div class="lot">${esc(b.lot||'—')}</div>${spec?`<div class="spec">${esc(spec)}</div>`:''}${pn?`<div class="spec">${esc(pn)}</div>`:''}</div>
       <div class="dl-cell">${esc(car||'—')}</div>
       <div class="dl-cell">${useTag(b.use,'sm')||'—'}</div>
       <div class="dl-cell">${esc(pur||'—')}
