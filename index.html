@@ -754,6 +754,7 @@ function lotCard(b){
     </div>
     <div class="fields">
       <div class="field"><span class="k">批號</span><span class="v mono">${esc(b.lot||'—')}</span></div>
+      <div class="field"><span class="k">品號</span><span class="v mono ${val(b.pn)?'':'dim'}">${esc(val(b.pn)||'—')}</span></div>
       <div class="field"><span class="k">規格</span><span class="v">${esc(spec||'—')}</span></div>
       <div class="field"><span class="k">板厚</span><span class="v mono">${thkText(b.thk)}</span></div>
       <div class="field"><span class="k">用途</span><span class="v ${pur?'':'dim'}">${esc(pur||'—')}</span></div>
@@ -769,10 +770,11 @@ function deskRow(b){
   const pur  = val(b.pur);
   const note = val(b.note);
   const thk  = val(b.thk);
+  const pn   = val(b.pn);
   const expNo = (b.exp||'').trim()==='✘';
   return `
     <div class="dl-row dl-grid reveal">
-      <div><div class="lot">${esc(b.lot||'—')}</div>${spec?`<div class="spec">${esc(spec)}</div>`:''}</div>
+      <div><div class="lot">${esc(b.lot||'—')}</div>${spec?`<div class="spec">${esc(spec)}</div>`:''}${pn?`<div class="spec">品號 ${esc(pn)}</div>`:''}</div>
       <div class="dl-cell">${esc(car||'—')}</div>
       <div class="dl-cell">${useTag(b.use,'sm')||'—'}</div>
       <div class="dl-cell">${esc(pur||'—')}
@@ -790,7 +792,7 @@ function deskList(items){
     </div>` : '';
   return `
   <div class="desk-list">
-    <div class="dl-header dl-grid reveal"><span>批號 / 規格</span><span>載具</span><span>屬性</span><span>使用目的 / 備註</span></div>
+    <div class="dl-header dl-grid reveal"><span>批號 / 規格 / 品號</span><span>載具</span><span>屬性</span><span>使用目的 / 備註</span></div>
     ${grp(items.filter(x=>x.wh==='A倉'),'gA','A倉')}
     ${grp(items.filter(x=>x.wh==='B倉'),'gB','B倉')}
   </div>`;
@@ -888,6 +890,14 @@ function toggleSize(i){
   if(openIdx===i){ closeSize(i); }
   else { if(openIdx!==-1) closeSize(openIdx); openSize(i); }
 }
+
+/* ── 電腦版：展開時點擊欄塊外的空白處即收合 ── */
+document.addEventListener('click', e=>{
+  if(openIdx===-1) return;
+  if(!window.matchMedia('(min-width:900px)').matches) return;
+  if(e.target.closest('.size-item, .hero, .sidebar, .dock-wrap, .lock')) return;
+  closeSize(openIdx);
+});
 
 /* ── carousel dots 狀態同步（手機） ── */
 function attachDots(){
@@ -1088,6 +1098,7 @@ function mapBlanks(rows){
   const cC=findCol(H,['載具','carrier']);
   const cP=findCol(H,['使用目的','目的','purpose']);
   const cU=findCol(H,['用途']);
+  const cPN=findCol(H,['品號','part no','item no']);
   const cN=findCol(H,['備註','note']);
   const cT=findCol(H,['板厚','thickness','thk']);
   const cE=findCol(H,['費用化','exp']);
@@ -1095,7 +1106,7 @@ function mapBlanks(rows){
   for(const r of rows.slice(1)){
     const wh=cell(r,cW).trim();
     if(wh!=='A倉' && wh!=='B倉') continue;
-    out.push({ lot:cell(r,cL), spec:cell(r,cS), wh, car:cell(r,cC), thk:cell(r,cT), use:cell(r,cU), pur:cell(r,cP), note:cell(r,cN), exp:cell(r,cE) });
+    out.push({ lot:cell(r,cL), pn:cell(r,cPN), spec:cell(r,cS), wh, car:cell(r,cC), thk:cell(r,cT), use:cell(r,cU), pur:cell(r,cP), note:cell(r,cN), exp:cell(r,cE) });
   }
   return out;
 }
