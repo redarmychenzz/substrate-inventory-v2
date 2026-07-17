@@ -34,6 +34,11 @@
 - Sheet 必須維持「知道連結的人可檢視」
 - 行為：先用 `data.js` 靜態秒開 → 背景 JSONP 抓即時覆蓋 → 失敗回退靜態
 - 欄位靠名稱對應（`findCol`），Sheet 欄序調動不會壞
+- 快照自動更新（因公司網路擋 docs.google.com，回退時資料不能太舊）：
+  - GitHub Actions（`.github/workflows/update-data.yml`）每 30 分鐘跑 `scripts/update_data.py`
+  - 腳本抓 gviz 重建 `data.js`（欄位對應邏輯與 index.html 一致）；
+    只在資料有變化、或快照逾 24h（心跳）時 commit，避免噪音
+  - 注意：本機 PAT 無 `workflow` scope，改 workflow 檔要在 GitHub 網頁上編輯
 
 ## 技術/架構重點
 - 純靜態、無 build、vanilla JS
