@@ -7,10 +7,13 @@
 串接 Google Sheet 即時資料，已部署到 GitHub Pages。
 
 ## 檔案位置（本機 macOS）
-- 專案資料夾：`/Users/tom464072/Library/CloudStorage/OneDrive-HOYACorporation/claude_code_project/美化版_庫存管理系統網頁`
+- 專案資料夾：`~/Library/CloudStorage/OneDrive-HOYACorporation/claude_code_project/美化版_庫存管理系統網頁`
+  （OneDrive 同步，曾出現在 `/Users/tom464072/` 與 `/Users/tom/` 兩台機器；跨機同步會改檔案權限，repo 已設 `core.fileMode false` 忽略）
 - 主要檔案：
   - `index.html`（單一檔案 App，HTML+CSS+JS 全包）
-  - `data.js`（靜態快照，即時讀取失敗時的後備，`window.INVENTORY_DATA`）
+  - `data.js`（靜態快照，即時讀取失敗時的後備，`window.INVENTORY_DATA`；由 Actions 自動更新）
+  - `scripts/update_data.py`（快照更新腳本，GitHub Actions 定時執行）
+  - `.github/workflows/update-data.yml`（每 30 分鐘排程；改此檔需在 GitHub 網頁編輯）
   - `manifest.webmanifest`（PWA / 桌面 icon 設定）
   - `assets/icon.svg` + `assets/icon-{16,32,180,192,512}.png`（墨綠立體庫存箱 icon）
 - 舊版（未動，勿覆蓋）：同層的 `庫存管理系統網頁/`（另一個 repo `substrate-inventory`）
@@ -21,8 +24,9 @@
 - Pages 設定：main 分支 / root
 - 更新流程：改 `index.html` → 在專案資料夾 `git add -A && git commit && git push origin main` → Pages 自動重建（約 1–2 分鐘，手機需強制重新整理清快取）
 - git 作者用 `redarmychenzz / redarmychenzz@gmail.com`；commit 訊息尾端加
-  `Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>`
-- 沒裝 `gh` CLI；git https 認證已通
+  `Co-Authored-By: <當前 Claude 模型名> <noreply@anthropic.com>`（近期為 Claude Fable 5）
+- 沒裝 `gh` CLI；git https 認證已通（PAT 無 `workflow` scope，推不動 `.github/workflows/`）
+- Actions 會自動 commit 快照，本機推送前建議先 `git pull --rebase origin main`
 
 ## 密碼鎖
 - 密碼：**不列於此公開檔**（owner 已知；SHA-256 hash 已寫在 `index.html` 的 `PWD_HASH`）
@@ -77,6 +81,19 @@
 - 底部液態玻璃 dock（手機）/ 左側欄（電腦）切兩頁，狀態同步
 - 左右滑動切換分頁（基板左滑→6012、6012右滑→基板；避開輪播與垂直捲動、鎖定時不觸發）
 - 桌面/網頁 icon（墨綠底立體紙箱+勾選徽章）、PWA manifest、iOS 全螢幕 meta
+
+## 進度紀錄
+### 2026/07/16–17
+- 屬性徽章（Sheet「用途」欄）：工程/調查/校正/回收/其他，手機卡片與電腦條列皆顯示（a6ca048）
+- 電腦版展開改條列式：帳冊表格＋分倉分組，取代輪播（a6ca048）
+- 載具/屬性欄置中、「用途」表頭改「屬性」、電腦版頁寬 600→800px＋字級放大（5bcfdc3）
+- 全站動畫系統六件套：背景光暈/卡片懸浮光澤/數字滾動/微互動/分頁過場/重新整理回饋（b6dda1e）
+- 基板加品號（pn）；電腦版點欄塊外空白處收合（d582056）；品號去除前綴字樣（551e100）
+- 解決公司網路擋 Google Sheet：GitHub Actions 每 30 分鐘自動更新 data.js 快照
+  （scripts/update_data.py + update-data.yml，資料變更或逾 24h 心跳才 commit）
+### 2026/08/06
+- 基板 list 新增倉別/載具篩選列（53e10b2）
+- 篩選列改為僅手機版顯示，電腦版隱藏；跨到電腦版寬度自動重置篩選（e04ae99）
 
 ## 待確認 / 注意
 - iOS 上下白邊：已用標準修法（html 純色 background-color `--bg-solid` + `apple-mobile-web-app-status-bar-style: black-translucent` + 動態 theme-color），但需在真 iPhone 確認；換新 icon/全螢幕需「重新加入主畫面」
