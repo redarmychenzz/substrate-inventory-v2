@@ -516,6 +516,8 @@
       padding:calc(env(safe-area-inset-top) + 32px) 32px 56px;
     }
     .page{max-width:800px;margin:0 auto;}
+    /* 篩選列僅手機版提供 */
+    .filter-bar{display:none;}
     /* 桌面字級放大（閱讀距離較遠） */
     .hero-title{font-size:21px;}
     .hero-title small{font-size:12px;}
@@ -851,6 +853,10 @@ document.getElementById('filterBar').addEventListener('click', e=>{
   if(t==='wh'){ if(fWh===v) return; fWh = v; }
   else        { if(fCar===v) return; fCar = v; }
   buildBlanks(lastD);
+});
+// 篩選列僅手機版：切到電腦版寬度時重置篩選，避免看不到篩選列卻被篩選
+window.matchMedia('(min-width:900px)').addEventListener('change', m=>{
+  if(m.matches && (fWh || fCar)){ fWh=''; fCar=''; buildBlanks(lastD); }
 });
 
 /* ── 建立主頁（可重複呼叫：靜態→即時→篩選變更） ── */
