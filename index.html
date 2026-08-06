@@ -191,6 +191,35 @@
   .list-head{display:flex;align-items:center;gap:8px;padding:2px 6px 10px;}
   .list-head .t{font-size:12px;font-weight:700;color:var(--ink-2);letter-spacing:1px;}
   .size-list{display:flex;flex-direction:column;gap:11px;}
+  .size-list .size-item{animation:itemIn .35s var(--ease) backwards;}
+  @keyframes itemIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+
+  /* ── 篩選列（倉別 / 載具） ── */
+  .filter-bar{display:flex;flex-direction:column;gap:8px;padding:0 4px 12px;}
+  .f-group{display:flex;align-items:center;gap:9px;}
+  .f-lab{flex:none;font-size:11px;font-weight:700;color:var(--ink-3);letter-spacing:.5px;width:28px;}
+  .f-chips{display:flex;gap:6px;flex-wrap:wrap;}
+  .f-chip{
+    border:1px solid var(--hair);background:var(--card);color:var(--ink-2);
+    font-family:inherit;font-size:12px;font-weight:700;line-height:1;
+    padding:7px 13px;border-radius:999px;cursor:pointer;
+    -webkit-backdrop-filter:saturate(180%) blur(10px);backdrop-filter:saturate(180%) blur(10px);
+    transition:color .2s, border-color .2s, background .25s, box-shadow .25s, transform .15s var(--ease);
+  }
+  .f-chip:active{transform:scale(.93);}
+  .f-chip.on{color:#fff;border-color:transparent;
+    background:linear-gradient(140deg,var(--blue),#4aa3ff);
+    box-shadow:0 6px 16px -6px rgba(10,132,255,.6);}
+  .f-chip.on.grn{background:linear-gradient(140deg,#25b466,#43cf82);
+    box-shadow:0 6px 16px -6px rgba(47,191,110,.6);}
+  .f-chip.on.pur{background:linear-gradient(140deg,#7c73e6,#9d95f0);
+    box-shadow:0 6px 16px -6px rgba(124,115,230,.6);}
+  .size-empty{
+    background:var(--card);border:1px solid var(--hair);border-radius:20px;
+    box-shadow:var(--shadow-sm);text-align:center;color:var(--ink-3);
+    font-size:13px;padding:22px 16px;
+    -webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
+  }
 
   .size-item{
     background:var(--card);
@@ -593,6 +622,10 @@
     </div>
 
     <div class="list-head"><span class="t">庫存尺寸</span></div>
+    <div class="filter-bar" id="filterBar">
+      <div class="f-group"><span class="f-lab">倉別</span><div class="f-chips" id="fWh"></div></div>
+      <div class="f-group"><span class="f-lab">載具</span><div class="f-chips" id="fCar"></div></div>
+    </div>
     <div class="size-list" id="sizeList"></div>
   </section>
 
@@ -798,12 +831,39 @@ function deskList(items){
   </div>`;
 }
 
-/* ── 建立主頁（可重複呼叫：靜態→即時） ── */
+/* ── 篩選（倉別 / 載具）：chips 重繪與狀態 ── */
+let fWh = '', fCar = '';
+function renderFilters(lots){
+  const cars = [...new Set(lots.map(b=>(b.car||'').trim()).filter(v=>v && v!=='-'))].sort();
+  if(fCar && !cars.includes(fCar)) fCar = '';   // 即時資料變動後選項消失 → 回到全部
+  const cur = t => t==='wh' ? fWh : fCar;
+  const chip = (t,v,lab,extra) =>
+    `<button class="f-chip${cur(t)===v ? ' on'+(extra?' '+extra:'') : ''}" data-t="${t}" data-v="${esc(v)}">${esc(lab)}</button>`;
+  document.getElementById('fWh').innerHTML =
+    chip('wh','','全部') + chip('wh','A倉','A倉') + chip('wh','B倉','B倉','grn');
+  document.getElementById('fCar').innerHTML =
+    chip('car','','全部') + cars.map(c=>chip('car',c,c,'pur')).join('');
+}
+document.getElementById('filterBar').addEventListener('click', e=>{
+  const c = e.target.closest('.f-chip');
+  if(!c) return;
+  const t = c.dataset.t, v = c.dataset.v;
+  if(t==='wh'){ if(fWh===v) return; fWh = v; }
+  else        { if(fCar===v) return; fCar = v; }
+  buildBlanks(lastD);
+});
+
+/* ── 建立主頁（可重複呼叫：靜態→即時→篩選變更） ── */
 const listEl = document.getElementById('sizeList');
 function buildBlanks(D){
   const valid = (D.blanks||[]).filter(b => b.wh==='A倉' || b.wh==='B倉');
+  renderFilters(valid);
+  // 套用篩選後才分組；Hero 數字維持全量
+  const shown = valid.filter(b =>
+    (!fWh  || b.wh===fWh) &&
+    (!fCar || (b.car||'').trim()===fCar));
   const groups = new Map();
-  for(const b of valid){
+  for(const b of shown){
     const k = parseSize(b.spec);
     if(!k) continue;
     if(!groups.has(k)) groups.set(k,[]);
@@ -812,7 +872,6 @@ function buildBlanks(D){
   setNum('totalNum', valid.length);
   setNum('whA', valid.filter(b=>b.wh==='A倉').length);
   setNum('whB', valid.filter(b=>b.wh==='B倉').length);
-  popPills('page-blanks');
 
   const sortedKeys = [...groups.keys()].sort((a,b)=>{
     const [a1,a2,a3]=a.split('X').map(Number), [b1,b2,b3]=b.split('X').map(Number);
@@ -831,7 +890,7 @@ function buildBlanks(D){
       </div>` : '';
   const hint = multi ? `<div class="swipe-hint reveal"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5l-4 7 4 7M16 5l4 7-4 7"/></svg>左右滑動切換批號（共 ${items.length} 片）</div>` : '';
   html += `
-  <div class="size-item" data-idx="${i}">
+  <div class="size-item" data-idx="${i}" style="animation-delay:${i*35}ms">
     <div class="size-row" onclick="toggleSize(${i})">
       <div class="size-icon">
         <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3 9h18M8 5v14"/></svg>
@@ -856,7 +915,7 @@ function buildBlanks(D){
     </div>
   </div>`;
   });
-  listEl.innerHTML = html;
+  listEl.innerHTML = html || '<div class="size-empty">沒有符合篩選條件的基板</div>';
   openIdx = -1;
   attachDots();
 }
@@ -1129,8 +1188,9 @@ function map6012(rows){
   return { unused: mu?+mu[1]:null, scrap: ms?+ms[1]:null, rows: rowsOut };
 }
 
-/* ── 一次建立兩頁 ── */
-function build(D){ buildBlanks(D); build6012(D); }
+/* ── 一次建立兩頁（lastD 供篩選變更時重建） ── */
+let lastD = FALLBACK;
+function build(D){ lastD = D; buildBlanks(D); popPills('page-blanks'); build6012(D); }
 function setUpdated(txt){
   document.getElementById('updated').textContent = txt;
   document.getElementById('updated6012').textContent = txt;
