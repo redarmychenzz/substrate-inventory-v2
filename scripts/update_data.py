@@ -119,7 +119,13 @@ def map_blanks(rows):
 def map_6012(rows):
     H = rows[0] if rows else []
     hB = H[1] if len(H) > 1 else ""
-    mu = re.search(r"未使用庫存[：:]\s*(\d+)\s*片", hB)
+    # 標頭摘要目前使用「📦 庫存」，舊版則是「未使用庫存」。
+    # 「庫存」只允許出現在摘要開頭或分隔符後，避免誤抓後段的「目前庫存」。
+    mu = re.search(
+        r"(?:未使用庫存|(?:^|[｜\n])\s*📦?\s*庫存)[：:]\s*(\d+)\s*片",
+        hB,
+        re.M,
+    )
     ms = re.search(r"可報廢[：:]\s*(\d+)\s*片", hB)
     cEmp  = find_col(H, ["人員工號", "工號", "employee"])
     cTime = find_col(H, ["時間", "time"])

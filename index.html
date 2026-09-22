@@ -1178,7 +1178,9 @@ function mapBlanks(rows){
 function map6012(rows){
   const H = rows[0]||[];
   const hB = H[1]||'';
-  const mu = hB.match(/未使用庫存[：:]\s*(\d+)\s*片/);
+  // 標頭摘要目前使用「📦 庫存」，舊版則是「未使用庫存」。
+  // 「庫存」只允許出現在摘要開頭或分隔符後，避免誤抓後段的「目前庫存」。
+  const mu = hB.match(/(?:未使用庫存|(?:^|[｜\n])\s*📦?\s*庫存)[：:]\s*(\d+)\s*片/m);
   const ms = hB.match(/可報廢[：:]\s*(\d+)\s*片/);
   const cEmp=findCol(H,['人員工號','工號','employee']);
   const cTime=findCol(H,['時間','time']);
